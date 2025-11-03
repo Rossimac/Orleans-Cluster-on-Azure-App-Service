@@ -52,7 +52,7 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
 }
 
 resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
-  name: '${appName}stg'
+  name: '${appName}/stg'
   location: location
   properties: {
     serverFarmId: appServicePlan.id
@@ -86,8 +86,8 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
 }
 
 resource slotConfig 'Microsoft.Web/sites/config@2021-03-01' = {
-  name: 'slotConfigNames'
-  parent: appService
+  parent: stagingSlot
+  name: 'appsettings'
   properties: {
     appSettingNames: [
       'ORLEANS_CLUSTER_ID'
