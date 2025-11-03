@@ -86,8 +86,7 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
 }
 
 resource slotConfig 'Microsoft.Web/sites/config@2021-03-01' = {
-  parent: stagingSlot
-  name: 'appsettings'
+  name: '${stagingSlot.name}/appsettings'
   properties: {
     appSettingNames: 'ORLEANS_CLUSTER_ID'
   }
