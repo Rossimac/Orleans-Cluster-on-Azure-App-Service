@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: net7cart
-  AZURE_RESOURCE_GROUP_NAME: orleanscartrg
-  AZURE_RESOURCE_GROUP_LOCATION: westus
+  UNIQUE_APP_NAME: cartify
+  AZURE_RESOURCE_GROUP_NAME: Dev
+  AZURE_RESOURCE_GROUP_LOCATION: ukwest
 
 jobs:
   build-and-deploy:
@@ -16,10 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup .NET 8.0
+    - name: Setup .NET 9.0
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
 
     - name: .NET publish shopping cart app
       run: dotnet publish ./Silo/Orleans.ShoppingCart.Silo.csproj --configuration Release
