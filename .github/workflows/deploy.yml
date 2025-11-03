@@ -8,7 +8,7 @@ on:
 env:
   UNIQUE_APP_NAME: cartify
   AZURE_RESOURCE_GROUP_NAME: Dev
-  AZURE_RESOURCE_GROUP_LOCATION: ukwest
+  AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
   build-and-deploy:
