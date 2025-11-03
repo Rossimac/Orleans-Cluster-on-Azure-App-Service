@@ -27,7 +27,7 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
     siteConfig: {
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
-      netFrameworkVersion: 'v6.0'
+      netFrameworkVersion: 'v9.0'
       appSettings: [
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
@@ -61,7 +61,7 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
       http20Enabled: true
       vnetPrivatePortsCount: 2
       webSocketsEnabled: true
-      netFrameworkVersion: 'v7.0'
+      netFrameworkVersion: 'v9.0'
       appSettings: [
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
@@ -85,11 +85,13 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2022-03-01' = {
   }
 }
 
-resource slotConfig 'Microsoft.Web/sites/slots/config@2021-03-01' = {
-  parent: stagingSlot
-  name: 'appsettings'
+resource slotConfig 'Microsoft.Web/sites/config@2021-03-01' = {
+  name: 'slotConfigNames'
+  parent: appService
   properties: {
-    appSettingNames: 'ORLEANS_CLUSTER_ID'
+    appSettingNames: [
+      'ORLEANS_CLUSTER_ID'
+    ]
   }
 }
 
