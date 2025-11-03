@@ -44,11 +44,18 @@ jobs:
           --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME  }} \
           --clean true --restart true \
           --type zip --src-path silo.zip --debug
+          
+    - name: Create staging slot
+      run: |
+        az webapp deployment slot create \
+          --name ${{ env.UNIQUE_APP_NAME }} \
+          --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME }} \
+          --slot stg
 
     - name: Staging deploy
       run: |
         az webapp deploy --name ${{ env.UNIQUE_APP_NAME }} \
-          --slot ${{ env.UNIQUE_APP_NAME }}-stg \
+          --slot stg \
           --resource-group ${{ env.AZURE_RESOURCE_GROUP_NAME  }} \
           --clean true --restart true \
           --type zip --src-path silo.zip --debug
