@@ -6,6 +6,26 @@ using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Log all environment variables
+var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
+logger.LogInformation("=== Environment Variables ===");
+foreach (System.Collections.DictionaryEntry envVar in Environment.GetEnvironmentVariables())
+{
+    logger.LogInformation("{Key} = {Value}", envVar.Key, envVar.Value);
+}
+logger.LogInformation("=== Configuration Values ===");
+logger.LogInformation("ORLEANS_AZURE_STORAGE_CONNECTION_STRING = {Value}",
+    builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"] ?? "NULL");
+logger.LogInformation("ORLEANS_CLUSTER_ID = {Value}",
+    builder.Configuration["ORLEANS_CLUSTER_ID"] ?? "NULL");
+logger.LogInformation("WEBSITE_PRIVATE_IP = {Value}",
+    builder.Configuration["WEBSITE_PRIVATE_IP"] ?? "NULL");
+logger.LogInformation("WEBSITE_PRIVATE_PORTS = {Value}",
+    builder.Configuration["WEBSITE_PRIVATE_PORTS"] ?? "NULL");
+logger.LogInformation("APPLICATIONINSIGHTS_CONNECTION_STRING = {Value}",
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? "NULL");
+logger.LogInformation("=== End Configuration ===");
+
 if (builder.Environment.IsDevelopment())
 {
     builder.UseOrleans(siloBuilder =>
