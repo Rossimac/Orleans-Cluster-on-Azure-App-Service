@@ -7,7 +7,7 @@ on:
 
 env:
   UNIQUE_APP_NAME: orleansross
-  AZURE_RESOURCE_GROUP_NAME: orleansresourcegroup
+  AZURE_RESOURCE_GROUP_NAME: orleans-test
   AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
