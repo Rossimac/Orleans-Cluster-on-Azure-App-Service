@@ -38,16 +38,15 @@ else
                 options.ClusterId = builder.Configuration["ORLEANS_CLUSTER_ID"];
                 options.ServiceId = nameof(ShoppingCartService);
             })
-        .UseAzureStorageClustering(
-            options =>
-            {
-                options.TableServiceClient = new TableServiceClient(new Uri(builder.Configuration["ORLEANS_AZURE_STORAGE_URI"]!), new DefaultAzureCredential());
-                options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Clustering";
-            })
+        .UseAzureStorageClustering(options =>
+        {
+            options.TableServiceClient = new(builder.Configuration.GetConnectionString("ORLEANS_AZURE_STORAGE_CONNECTION_STRING"));
+            options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Clustering";
+        })
         .AddAzureTableGrainStorage("shopping-cart",
             options =>
             {
-                options.TableServiceClient = new TableServiceClient(new Uri(builder.Configuration["ORLEANS_AZURE_STORAGE_URI"]!), new DefaultAzureCredential());
+                options.TableServiceClient = new(builder.Configuration.GetConnectionString("ORLEANS_AZURE_STORAGE_CONNECTION_STRING"));
                 options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Persistence";
             });
     });
