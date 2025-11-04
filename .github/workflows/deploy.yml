@@ -6,8 +6,8 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: rossorleans
-  AZURE_RESOURCE_GROUP_NAME: orleans-resourcegroup
+  UNIQUE_APP_NAME: orleansross
+  AZURE_RESOURCE_GROUP_NAME: orleansresourcegroup
   AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
