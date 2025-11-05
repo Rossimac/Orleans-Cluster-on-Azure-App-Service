@@ -12,8 +12,8 @@ module storageModule 'storage.bicep' = {
 module cosmos 'cosmos.bicep' = {
   name: 'cosmosDeploy'
   params: {
-    databaseName: 'OrleansDb'
-    containerName: 'OrleansContainer'
+    databaseName: 'pet-claims'
+    containerName: 'pet-claims'
   }
 }
 
