@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: orlstream
-  AZURE_RESOURCE_GROUP_NAME: streamer-orleans
-  AZURE_RESOURCE_GROUP_LOCATION: northeurope
+  UNIQUE_APP_NAME: orleansy
+  AZURE_RESOURCE_GROUP_NAME: orleansy
+  AZURE_RESOURCE_GROUP_LOCATION: westeurope
 
 jobs:
   build-and-deploy:
