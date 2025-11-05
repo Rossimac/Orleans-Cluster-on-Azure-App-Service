@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: orleansross
-  AZURE_RESOURCE_GROUP_NAME: orleans-test
-  AZURE_RESOURCE_GROUP_LOCATION: uksouth
+  UNIQUE_APP_NAME: orlstream
+  AZURE_RESOURCE_GROUP_NAME: streamer-orleans
+  AZURE_RESOURCE_GROUP_LOCATION: northeurope
 
 jobs:
   build-and-deploy:
