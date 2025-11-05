@@ -1,36 +1,20 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT License.
 
-using Azure.Data.Tables;
-using Azure.Identity;
+using Microsoft.Azure.Cosmos;
+using Orleans.Streams;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Log all environment variables
-var logger = LoggerFactory.Create(config => config.AddConsole()).CreateLogger("Startup");
-logger.LogInformation("=== Environment Variables ===");
-foreach (System.Collections.DictionaryEntry envVar in Environment.GetEnvironmentVariables())
-{
-    logger.LogInformation("{Key} = {Value}", envVar.Key, envVar.Value);
-}
-logger.LogInformation("=== Configuration Values ===");
-logger.LogInformation("ORLEANS_AZURE_STORAGE_CONNECTION_STRING = {Value}",
-    builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"] ?? "NULL");
-logger.LogInformation("ORLEANS_CLUSTER_ID = {Value}",
-    builder.Configuration["ORLEANS_CLUSTER_ID"] ?? "NULL");
-logger.LogInformation("WEBSITE_PRIVATE_IP = {Value}",
-    builder.Configuration["WEBSITE_PRIVATE_IP"] ?? "NULL");
-logger.LogInformation("WEBSITE_PRIVATE_PORTS = {Value}",
-    builder.Configuration["WEBSITE_PRIVATE_PORTS"] ?? "NULL");
-logger.LogInformation("APPLICATIONINSIGHTS_CONNECTION_STRING = {Value}",
-    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? "NULL");
-logger.LogInformation("=== End Configuration ===");
 
 if (builder.Environment.IsDevelopment())
 {
     builder.UseOrleans(siloBuilder =>
     {
-        siloBuilder.UseLocalhostClustering().AddMemoryGrainStorage("shopping-cart");
+        siloBuilder
+            .UseLocalhostClustering()
+            .AddMemoryStreams("PetClaimsStreamProvider")
+            .AddMemoryGrainStorage("PubSubStore")
+            .AddMemoryGrainStorage("pet-insurance");
     });
 }
 else
@@ -46,29 +30,69 @@ else
         if (strPorts.Length < 2)
         {
             var env = Environment.GetEnvironmentVariable("WEBSITE_PRIVATE_PORTS");
-            throw new Exception($"Insufficient private ports configured: WEBSITE_PRIVATE_PORTS: '{builder.Configuration["WEBSITE_PRIVATE_PORTS"]?.ToString()}' or '{env}.");
+            throw new Exception(
+                $"Insufficient private ports configured: WEBSITE_PRIVATE_PORTS: '{builder.Configuration["WEBSITE_PRIVATE_PORTS"]?.ToString()}' or '{env}.");
         }
 
         var (siloPort, gatewayPort) = (int.Parse(strPorts[0]), int.Parse(strPorts[1]));
 
         siloBuilder.ConfigureEndpoints(endpointAddress, siloPort, gatewayPort, listenOnAnyHostAddress: true)
-        .Configure<ClusterOptions>(
-            options =>
+            .Configure<ClusterOptions>(options =>
             {
                 options.ClusterId = builder.Configuration["ORLEANS_CLUSTER_ID"];
                 options.ServiceId = nameof(ShoppingCartService);
             })
-        .UseAzureStorageClustering(options =>
-        {
-            options.TableServiceClient = new(builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"]);
-            options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Clustering";
-        })
-        .AddAzureTableGrainStorage("shopping-cart",
-            options =>
+            .UseAzureStorageClustering(options =>
             {
                 options.TableServiceClient = new(builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"]);
-                options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Persistence";
-            });
+                options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Clustering";
+            })
+            .AddAzureTableGrainStorage("pet-insurance",
+                options =>
+                {
+                    options.TableServiceClient = new(builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"]);
+                    options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Persistence";
+                })
+            .AddCosmosGrainStorage(
+                name: "pet-insurance",
+                configureOptions: options =>
+                {
+                    var endpoint = builder.Configuration["COSMOS_ENDPOINT"];
+                    var key = builder.Configuration["COSMOS_PRIMARY_KEY"];
+                    var db = builder.Configuration["COSMOS_DATABASE_NAME"];
+                    var container = builder.Configuration["COSMOS_CONTAINER_NAME"];
+
+                    options.DatabaseName = db;
+                    options.ContainerName = container;
+                    options.ContainerThroughputProperties = ThroughputProperties.CreateAutoscaleThroughput(1000);
+                    options.ConfigureCosmosClient($"AccountEndpoint={endpoint};AccountKey={key};");
+                })
+            .AddEventHubStreams(
+                "PetClaimsStreamProvider",
+                configurator =>
+                {
+                    configurator.ConfigureEventHub(eventHubBuilder => eventHubBuilder.Configure(options =>
+                    {
+                        var ehConnection = builder.Configuration["EVENTHUB_CONNECTION_STRING"] +
+                                           ".servicebus.windows.net";
+                        var ehName = builder.Configuration["EVENTHUB_NAME"];
+                        var ehConsumer = builder.Configuration["EVENTHUB_CONSUMER_GROUP"] ?? "$Default";
+
+                        options.ConfigureEventHubConnection(ehConnection, ehName, ehConsumer);
+                    }));
+
+                    configurator.ConfigurePartitionReceiver(configure =>
+                    {
+                        configure.Configure(options => { options.PrefetchCount = 100; });
+                    });
+
+                    configurator.UseAzureTableCheckpointer(checkpointBuilder => checkpointBuilder.Configure(options =>
+                    {
+                        options.TableServiceClient = new(builder.Configuration["CHECKPOINT_STORAGE_CONNECTION_STRING"]);
+                        options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}EventHubCheckpoints";
+                    }));
+                    configurator.ConfigureStreamPubSub(StreamPubSubType.ImplicitOnly);
+                });
     });
 }
 
@@ -87,7 +111,8 @@ var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CON
 if (!string.IsNullOrEmpty(appInsightsConnectionString))
 {
     services.AddApplicationInsights("Silo");
-    builder.Logging.AddApplicationInsights((telemetry) => telemetry.ConnectionString = appInsightsConnectionString, logger => { });
+    builder.Logging.AddApplicationInsights((telemetry) => telemetry.ConnectionString = appInsightsConnectionString,
+        logger => { });
 }
 
 builder.Services.AddHostedService<ProductStoreSeeder>();

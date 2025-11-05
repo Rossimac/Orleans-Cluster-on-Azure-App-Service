@@ -1,10 +1,15 @@
 param appName string
 param location string
 param vnetSubnetId string
-param stagingSubnetId string
 param appInsightsInstrumentationKey string
 param appInsightsConnectionString string
 param storageConnectionString string
+param cosmosEndpoint string
+param cosmosPrimaryKey string
+param cosmosDatabaseName string
+param cosmosContainerName string
+param eventHubNamespaceId string
+param eventHubName string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-03-01' = {
   name: '${appName}-plan'
@@ -45,8 +50,40 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
           value: storageConnectionString
         }
         {
+          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
+          value: storageConnectionString
+        }
+        {
           name: 'ORLEANS_CLUSTER_ID'
           value: 'Default'
+        }
+        {
+          name: 'COSMOS_ENDPOINT'
+          value: cosmosEndpoint
+        }
+        {
+          name: 'COSMOS_PRIMARY_KEY'
+          value: cosmosPrimaryKey
+        }
+        {
+          name: 'COSMOS_DATABASE_NAME'
+          value: cosmosDatabaseName
+        }
+        {
+          name: 'COSMOS_CONTAINER_NAME'
+          value: cosmosContainerName
+        }
+        {
+          name: 'EVENTHUB_NAMESPACE_ID'
+          value: eventHubNamespaceId
+        }
+        {
+          name: 'EVENTHUB_NAME'
+          value: eventHubName
+        }
+        {
+          name: 'CHECKPOINT_STORAGE_CONNECTION_STRING'
+          value: storageConnectionString
         }
       ]
       alwaysOn: true

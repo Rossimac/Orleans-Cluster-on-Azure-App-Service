@@ -4,8 +4,24 @@ param location string = resourceGroup().location
 module storageModule 'storage.bicep' = {
   name: 'orleansStorageModule'
   params: {
-    name: '${appName}storage'
+    baseName: '${appName}storage'
     location: location
+  }
+}
+
+module cosmos 'cosmos.bicep' = {
+  name: 'cosmosDeploy'
+  params: {
+    databaseName: 'OrleansDb'
+    containerName: 'OrleansContainer'
+  }
+}
+
+module eventhub 'eventhub.bicep' = {
+  name: 'eventhubDeploy'
+  params: {
+    location: location
+    baseName: '${appName}eventhub'
   }
 }
 
@@ -67,9 +83,14 @@ module siloModule 'app-service.bicep' = {
     appName: appName
     location: location
     vnetSubnetId: vnet.properties.subnets[0].id
-    stagingSubnetId: vnet.properties.subnets[1].id
     appInsightsConnectionString: logsModule.outputs.appInsightsConnectionString
     appInsightsInstrumentationKey: logsModule.outputs.appInsightsInstrumentationKey
     storageConnectionString: storageModule.outputs.connectionString
+    cosmosEndpoint: cosmos.outputs.cosmosEndpoint
+    cosmosPrimaryKey: cosmos.outputs.cosmosPrimaryKey
+    cosmosDatabaseName: cosmos.outputs.cosmosDatabaseName
+    cosmosContainerName: cosmos.outputs.cosmosContainerName
+    eventHubNamespaceId: eventhub.outputs.eventHubNamespaceId
+    eventHubName: eventhub.outputs.eventHubName
   }
 }

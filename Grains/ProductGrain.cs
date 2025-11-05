@@ -7,15 +7,15 @@ namespace Orleans.ShoppingCart.Grains;
 internal sealed class ProductGrain(
     [PersistentState(
             stateName: "Product",
-            storageName: "shopping-cart")]
+            storageName: "pet-insurance")]
         IPersistentState<ProductDetails> state) : Grain, IProductGrain
 {
     private readonly StateManager _stateManager = new(state);
 
-    Task<int> IProductGrain.GetProductAvailabilityAsync() => 
+    Task<int> IProductGrain.GetProductAvailabilityAsync() =>
         Task.FromResult(state.State.Quantity);
 
-    Task<ProductDetails> IProductGrain.GetProductDetailsAsync() => 
+    Task<ProductDetails> IProductGrain.GetProductDetailsAsync() =>
         Task.FromResult(state.State);
 
     Task IProductGrain.ReturnProductAsync(int quantity) =>

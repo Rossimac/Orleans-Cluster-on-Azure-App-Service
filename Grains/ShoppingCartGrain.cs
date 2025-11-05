@@ -7,7 +7,7 @@ namespace Orleans.ShoppingCart.Grains;
 internal sealed class ShoppingCartGrain(
     [PersistentState(
             stateName: "ShoppingCart",
-            storageName: "shopping-cart")]
+            storageName: "pet-insurance")]
         IPersistentState<Dictionary<string, CartItem>> state) : Grain, IShoppingCartGrain
 {
     private readonly StateManager _stateManager = new(state);
