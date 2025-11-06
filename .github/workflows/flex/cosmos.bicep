@@ -30,11 +30,6 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
         isZoneRedundant: false
       }
     ]
-    capabilities: [
-      {
-        name: 'EnableServerless' // Remove this if using provisioned throughput
-      }
-    ]
   }
 }
 
