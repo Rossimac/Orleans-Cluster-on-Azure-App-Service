@@ -6,8 +6,8 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: petclaimsy
-  AZURE_RESOURCE_GROUP_NAME: petclaimsy
+  UNIQUE_APP_NAME: petclaims
+  AZURE_RESOURCE_GROUP_NAME: petclaims
   AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
