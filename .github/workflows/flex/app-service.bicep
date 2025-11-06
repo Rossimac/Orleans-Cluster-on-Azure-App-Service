@@ -50,10 +50,6 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
           value: storageConnectionString
         }
         {
-          name: 'ORLEANS_AZURE_STORAGE_CONNECTION_STRING'
-          value: storageConnectionString
-        }
-        {
           name: 'ORLEANS_CLUSTER_ID'
           value: 'Default'
         }
