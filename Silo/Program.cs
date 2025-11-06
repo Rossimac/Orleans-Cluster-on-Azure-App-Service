@@ -73,7 +73,7 @@ else
                 {
                     configurator.ConfigureEventHub(eventHubBuilder => eventHubBuilder.Configure(options =>
                     {
-                        var ehConnection = builder.Configuration["EVENTHUB_CONNECTION_STRING"]+ ".servicebus.windows.net";
+                        var ehConnection = builder.Configuration["EVENTHUB_CONNECTION_STRING"];
                         var ehName = builder.Configuration["EVENTHUB_NAME"];
                         var ehConsumer = builder.Configuration["EVENTHUB_CONSUMER_GROUP"] ?? "$Default";
 

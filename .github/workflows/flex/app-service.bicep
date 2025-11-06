@@ -8,6 +8,7 @@ param cosmosEndpoint string
 param cosmosPrimaryKey string
 param cosmosDatabaseName string
 param cosmosContainerName string
+param eventHubConnectionString string
 param eventHubNamespaceId string
 param eventHubName string
 
@@ -68,6 +69,10 @@ resource appService 'Microsoft.Web/sites@2021-03-01' = {
         {
           name: 'COSMOS_CONTAINER_NAME'
           value: cosmosContainerName
+        }
+        {
+          name: 'EVENTHUB_CONNECTION_STRING'
+          value: eventHubConnectionString
         }
         {
           name: 'EVENTHUB_NAMESPACE_ID'
