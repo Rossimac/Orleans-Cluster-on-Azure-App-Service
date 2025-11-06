@@ -10,6 +10,10 @@ param databaseName string
 @description('The name for the SQL API container')
 param containerName string
 
+param throughputPolicy string = 'autoscale' // 'autoscale' or 'manual'
+param autoscaleMaxThroughput int = 4000
+param manualThroughput int = 400
+
 resource account 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
   name: toLower(accountName)
   location: location
@@ -22,6 +26,13 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = {
     locations: [
       {
         locationName: location
+        failoverPriority: 0
+        isZoneRedundant: false
+      }
+    ]
+    capabilities: [
+      {
+        name: 'EnableServerless' // Remove this if using provisioned throughput
       }
     ]
   }
@@ -40,20 +51,23 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-11-15
   }
 }
 
-resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-11-15' = {
+
+// Container for Shopping Cart Grains
+resource shoppingCartContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
   parent: database
-  name: containerName
+  name: 'shopping-carts'
   properties: {
     resource: {
-      id: containerName
+      id: 'shopping-carts'
       partitionKey: {
         paths: [
-          '/id'
+          '/PartitionKey'
         ]
         kind: 'Hash'
       }
       indexingPolicy: {
         indexingMode: 'consistent'
+        automatic: true
         includedPaths: [
           {
             path: '/*'
@@ -61,18 +75,141 @@ resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/container
         ]
         excludedPaths: [
           {
-            path: '/_etag/?'
+            path: '/"_etag"/?'
           }
         ]
       }
+      defaultTtl: -1 // -1 means no default TTL
+    }
+    options: throughputPolicy == 'autoscale' ? {
+      autoscaleSettings: {
+        maxThroughput: autoscaleMaxThroughput
+      }
+    } : {
+      throughput: manualThroughput
+    }
+  }
+}
+
+// Container for Product Grains
+resource productContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+  parent: database
+  name: 'products'
+  properties: {
+    resource: {
+      id: 'products'
+      partitionKey: {
+        paths: [
+          '/PartitionKey'
+        ]
+        kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      defaultTtl: -1
+    }
+    options: throughputPolicy == 'autoscale' ? {
+      autoscaleSettings: {
+        maxThroughput: autoscaleMaxThroughput
+      }
+    } : {
+      throughput: manualThroughput
+    }
+  }
+}
+
+// Container for Inventory Grains
+resource inventoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+  parent: database
+  name: 'inventory'
+  properties: {
+    resource: {
+      id: 'inventory'
+      partitionKey: {
+        paths: [
+          '/PartitionKey'
+        ]
+        kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      defaultTtl: -1
+    }
+    options: throughputPolicy == 'autoscale' ? {
+      autoscaleSettings: {
+        maxThroughput: autoscaleMaxThroughput
+      }
+    } : {
+      throughput: manualThroughput
+    }
+  }
+}
+
+// Container for Pet Claims Grains
+resource petClaimsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+  parent: database
+  name: 'pet-claims'
+  properties: {
+    resource: {
+      id: 'pet-claims'
+      partitionKey: {
+        paths: [
+          '/PartitionKey'
+        ]
+        kind: 'Hash'
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [
+          {
+            path: '/*'
+          }
+        ]
+        excludedPaths: [
+          {
+            path: '/"_etag"/?'
+          }
+        ]
+      }
+      defaultTtl: -1
+    }
+    options: throughputPolicy == 'autoscale' ? {
+      autoscaleSettings: {
+        maxThroughput: autoscaleMaxThroughput
+      }
+    } : {
+      throughput: manualThroughput
     }
   }
 }
 
 output location string = location
-output name string = container.name
 output resourceGroupName string = resourceGroup().name
-output resourceId string = container.id
 
 output cosmosEndpoint string = account.properties.documentEndpoint
 output cosmosPrimaryKey string = account.listKeys().primaryMasterKey
