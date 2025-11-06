@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: orleansy
-  AZURE_RESOURCE_GROUP_NAME: orleansy
-  AZURE_RESOURCE_GROUP_LOCATION: westeurope
+  UNIQUE_APP_NAME: pleasework
+  AZURE_RESOURCE_GROUP_NAME: pleasework
+  AZURE_RESOURCE_GROUP_LOCATION: centralus
 
 jobs:
   build-and-deploy:
