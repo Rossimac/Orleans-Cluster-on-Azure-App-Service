@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: pleasework
-  AZURE_RESOURCE_GROUP_NAME: pleasework
-  AZURE_RESOURCE_GROUP_LOCATION: centralus
+  UNIQUE_APP_NAME: petclaimsy
+  AZURE_RESOURCE_GROUP_NAME: petclaimsy
+  AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
   build-and-deploy:
