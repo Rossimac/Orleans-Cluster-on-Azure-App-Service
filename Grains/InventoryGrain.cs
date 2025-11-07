@@ -7,7 +7,7 @@ namespace Orleans.ShoppingCart.Grains;
 internal sealed class InventoryGrain(
     [PersistentState(
             stateName: "Inventory",
-            storageName: "pet-insurance")]
+            storageName: "grain-storage")]
         IPersistentState<HashSet<string>> state) : Grain, IInventoryGrain
 {
     private readonly Dictionary<string, ProductDetails> _productCache = [];

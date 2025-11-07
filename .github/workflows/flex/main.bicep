@@ -89,7 +89,6 @@ module siloModule 'app-service.bicep' = {
     cosmosEndpoint: cosmos.outputs.cosmosEndpoint
     cosmosPrimaryKey: cosmos.outputs.cosmosPrimaryKey
     cosmosDatabaseName: cosmos.outputs.cosmosDatabaseName
-    cosmosContainerName: cosmos.outputs.cosmosContainerName
     eventHubConnectionString: eventhub.outputs.eventHubConnectionString
     eventHubNamespaceId: eventhub.outputs.eventHubNamespaceId
     eventHubName: eventhub.outputs.eventHubName

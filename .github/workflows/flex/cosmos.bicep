@@ -7,9 +7,6 @@ param location string = resourceGroup().location
 @description('The name for the SQL API database')
 param databaseName string
 
-@description('The name for the SQL API container')
-param containerName string
-
 param throughputPolicy string = 'autoscale' // 'autoscale' or 'manual'
 param autoscaleMaxThroughput int = 4000
 param manualThroughput int = 400
@@ -46,92 +43,13 @@ resource database 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-11-15
   }
 }
 
-
-// Container for Shopping Cart Grains
-resource shoppingCartContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
+// Container for General Grains
+resource generalContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
   parent: database
-  name: 'shopping-carts'
+  name: 'general'
   properties: {
     resource: {
-      id: 'shopping-carts'
-      partitionKey: {
-        paths: [
-          '/PartitionKey'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-      defaultTtl: -1 // -1 means no default TTL
-    }
-    options: throughputPolicy == 'autoscale' ? {
-      autoscaleSettings: {
-        maxThroughput: autoscaleMaxThroughput
-      }
-    } : {
-      throughput: manualThroughput
-    }
-  }
-}
-
-// Container for Product Grains
-resource productContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
-  parent: database
-  name: 'products'
-  properties: {
-    resource: {
-      id: 'products'
-      partitionKey: {
-        paths: [
-          '/PartitionKey'
-        ]
-        kind: 'Hash'
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-      defaultTtl: -1
-    }
-    options: throughputPolicy == 'autoscale' ? {
-      autoscaleSettings: {
-        maxThroughput: autoscaleMaxThroughput
-      }
-    } : {
-      throughput: manualThroughput
-    }
-  }
-}
-
-// Container for Inventory Grains
-resource inventoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2023-04-15' = {
-  parent: database
-  name: 'inventory'
-  properties: {
-    resource: {
-      id: 'inventory'
+      id: 'general'
       partitionKey: {
         paths: [
           '/PartitionKey'
@@ -209,4 +127,3 @@ output resourceGroupName string = resourceGroup().name
 output cosmosEndpoint string = account.properties.documentEndpoint
 output cosmosPrimaryKey string = account.listKeys().primaryMasterKey
 output cosmosDatabaseName string = databaseName
-output cosmosContainerName string = containerName

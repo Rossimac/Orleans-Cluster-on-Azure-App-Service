@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Azure.Cosmos;
+using Orleans.Persistence.Cosmos;
 using Orleans.Streams;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,8 @@ if (builder.Environment.IsDevelopment())
             .UseLocalhostClustering()
             .AddMemoryStreams("PetClaimsStreamProvider")
             .AddMemoryGrainStorage("PubSubStore")
-            .AddMemoryGrainStorage("pet-insurance");
+            .AddMemoryGrainStorage("grain-storage")
+            .AddMemoryGrainStorage("pet-claim-grain-storage");
     });
 }
 else
@@ -36,6 +38,18 @@ else
 
         var (siloPort, gatewayPort) = (int.Parse(strPorts[0]), int.Parse(strPorts[1]));
 
+        var endpoint = builder.Configuration["COSMOS_ENDPOINT"];
+        var key = builder.Configuration["COSMOS_PRIMARY_KEY"];
+        var db = builder.Configuration["COSMOS_DATABASE_NAME"];
+
+        var cosmosStoreOptions = new Action<CosmosGrainStorageOptions>(opt =>
+        {
+            opt.DatabaseName = db;
+            opt.ContainerName = "general";
+            opt.ContainerThroughputProperties = ThroughputProperties.CreateAutoscaleThroughput(1000);
+            opt.ConfigureCosmosClient($"AccountEndpoint={endpoint};AccountKey={key};");
+        });
+
         siloBuilder.ConfigureEndpoints(endpointAddress, siloPort, gatewayPort, listenOnAnyHostAddress: true)
             .Configure<ClusterOptions>(options =>
             {
@@ -47,26 +61,23 @@ else
                 options.TableServiceClient = new(builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"]);
                 options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Clustering";
             })
-            .AddAzureTableGrainStorage("pet-insurance",
+            .AddAzureTableGrainStorage("grain-storage",
                 options =>
                 {
                     options.TableServiceClient = new(builder.Configuration["ORLEANS_AZURE_STORAGE_CONNECTION_STRING"]);
                     options.TableName = $"{builder.Configuration["ORLEANS_CLUSTER_ID"]}Persistence";
                 })
             .AddCosmosGrainStorage(
-                name: "pet-insurance",
+                name: "grain-storage",
+                configureOptions: cosmosStoreOptions)
+            .AddCosmosGrainStorage(
+                name: "pet-claims-grain-storage",
                 configureOptions: options =>
                 {
-                    var endpoint = builder.Configuration["COSMOS_ENDPOINT"];
-                    var key = builder.Configuration["COSMOS_PRIMARY_KEY"];
-                    var db = builder.Configuration["COSMOS_DATABASE_NAME"];
-                    var container = builder.Configuration["COSMOS_CONTAINER_NAME"];
-
-                    options.DatabaseName = db;
-                    options.ContainerName = container;
-                    options.ContainerThroughputProperties = ThroughputProperties.CreateAutoscaleThroughput(1000);
-                    options.ConfigureCosmosClient($"AccountEndpoint={endpoint};AccountKey={key};");
-                })
+                    cosmosStoreOptions(options);
+                    options.ContainerName = "pet-claims";
+                },
+                typeof(JobTrackerPartitionKeyProvider))
             .AddEventHubStreams(
                 "PetClaimsStreamProvider",
                 configurator =>
@@ -135,3 +146,12 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 await app.RunAsync();
+
+
+public class JobTrackerPartitionKeyProvider : IPartitionKeyProvider
+{
+    public ValueTask<string> GetPartitionKey(string grainType, GrainId grainId)
+    {
+        return ValueTask.FromResult($"{grainType}.{grainId.ToString()}");
+    }
+}

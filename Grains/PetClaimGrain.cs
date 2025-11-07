@@ -3,7 +3,7 @@
 internal sealed class PetClaimsGrain(
     [PersistentState(
             stateName: "PetClaim",
-            storageName: "pet-insurance")]
+            storageName: "pet-claim-grain-storage")]
         IPersistentState<PetDetails> state) : Grain, IPetClaimsGrain
 {
     private readonly StateManager _stateManager = new(state);
