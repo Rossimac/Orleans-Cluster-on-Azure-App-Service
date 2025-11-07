@@ -13,7 +13,6 @@ module cosmos 'cosmos.bicep' = {
   name: 'cosmosDeploy'
   params: {
     databaseName: 'pet-claims'
-    containerName: 'pet-claims'
   }
 }
 
