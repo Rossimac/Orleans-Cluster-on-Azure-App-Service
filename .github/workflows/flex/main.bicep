@@ -93,3 +93,17 @@ module siloModule 'app-service.bicep' = {
     eventHubName: eventhub.outputs.eventHubName
   }
 }
+
+module functionModule 'function.bicep' = {
+  name: 'functionModule'
+  params: {
+    appName: appName
+    location: location
+    vnetSubnetId: vnet.properties.subnets[0].id 
+    appInsightsInstrumentationKey: logsModule.outputs.appInsightsInstrumentationKey
+    storageConnectionString: storageModule.outputs.connectionString
+    eventHubConnectionString: eventhub.outputs.eventHubConnectionString
+    eventHubNamespaceId: eventhub.outputs.eventHubNamespaceId
+    eventHubName: eventhub.outputs.eventHubName
+  }
+}

@@ -6,9 +6,9 @@ on:
     - main
 
 env:
-  UNIQUE_APP_NAME: petclaimit
-  AZURE_RESOURCE_GROUP_NAME: petclaimit
-  AZURE_RESOURCE_GROUP_LOCATION: italynorth
+  UNIQUE_APP_NAME: petclaimso
+  AZURE_RESOURCE_GROUP_NAME: petclaimso
+  AZURE_RESOURCE_GROUP_LOCATION: uksouth
 
 jobs:
   build-and-deploy:

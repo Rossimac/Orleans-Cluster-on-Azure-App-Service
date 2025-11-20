@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Orleans.ShoppingCart.PetClaims.Function": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7969",
+      "launchBrowser": false
+    }
+  }
+}

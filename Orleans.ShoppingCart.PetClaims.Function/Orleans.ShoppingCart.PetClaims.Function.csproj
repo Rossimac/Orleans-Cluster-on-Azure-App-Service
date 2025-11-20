@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <AzureFunctionsVersion>V4</AzureFunctionsVersion>
+        <OutputType>Exe</OutputType>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="Azure.Messaging.EventHubs" />
+        <PackageReference Include="Azure.Storage.Blobs" />
+        <PackageReference Include="CsvHelper" />
+        <PackageReference Include="Microsoft.ApplicationInsights.WorkerService"/>
+        <PackageReference Include="Microsoft.Azure.Functions.Worker"/>
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights"/>
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" />
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore"/>
+        <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Abstractions\Orleans.ShoppingCart.Abstractions.csproj" />
+      <ProjectReference Include="..\Orleans.ShoppingCart.ServiceDefaults\Orleans.ShoppingCart.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Orchestrators\" />
+    </ItemGroup>
+
+</Project>

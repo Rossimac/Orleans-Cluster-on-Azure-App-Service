@@ -1,0 +1,9 @@
+### Start a new orchestration
+POST http://localhost:7969/api/OrderProcessingOrchestration_HttpStart
+Content-Type: application/json
+
+###
+
+### (After the first call) Check orchestration status
+# Replace <instanceId> with the ID returned in the previous response
+GET http://localhost:7969/runtime/webhooks/durabletask/instances/theidoftheinstance

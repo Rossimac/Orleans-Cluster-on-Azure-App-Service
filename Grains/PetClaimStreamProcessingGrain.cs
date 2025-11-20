@@ -5,43 +5,45 @@ using Orleans.Streams;
 namespace Orleans.ShoppingCart.Grains;
 
 [ImplicitStreamSubscription("PetClaim")]
-public class PetClaimStreamProcessingGrain(ILogger<PetClaimStreamProcessingGrain> logger)
-    : Grain, IPetClaimStreamProcessingGrain
+public class PetClaimStreamProcessingGrain : Grain, IPetClaimStreamProcessingGrain
 {
-    private IAsyncStream<PetClaimsEvent> _stream = null!;
+    private IAsyncStream<ClaimEvent> _stream = null!;
+    private readonly ILogger<PetClaimStreamProcessingGrain> _logger;
+
+    public PetClaimStreamProcessingGrain(ILogger<PetClaimStreamProcessingGrain> logger)
+    {
+        _logger = logger;
+    }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         var streamProvider = this.GetStreamProvider("PetClaimsStreamProvider");
         var streamId = StreamId.Create("PetClaim", this.GetPrimaryKeyString());
-        _stream = streamProvider.GetStream<PetClaimsEvent>(streamId);
+        _stream = streamProvider.GetStream<ClaimEvent>(streamId);
 
         await _stream.SubscribeAsync(OnNextAsync);
 
         await base.OnActivateAsync(cancellationToken);
     }
 
-    private async Task OnNextAsync(PetClaimsEvent petClaimsEvent, StreamSequenceToken token)
+    private async Task OnNextAsync(ClaimEvent petClaimsEvent, StreamSequenceToken token)
     {
         try
         {
-            var petClaimsDetails = JsonSerializer.Deserialize<PetDetails>(petClaimsEvent.Data);
+            _logger.LogInformation("Received {Line} on the stream {StreamId}", petClaimsEvent.Line, _stream.StreamId);
 
-            if (petClaimsDetails != null)
-            {
-                var grain = GrainFactory.GetGrain<IPetClaimsGrain>(petClaimsDetails.Id);
-                await grain.CreateOrUpdatePetClaimsAsync(petClaimsDetails);
-            }
+            //var petClaimsDetails = JsonSerializer.Deserialize<ClaimEvent>(petClaimsEvent);
+
+            // if (petClaimsDetails != null)
+            // {
+            //     var grain = GrainFactory.GetGrain<IPetClaimsGrain>(petClaimsDetails.Line);
+            //     await grain.CreateOrUpdatePetClaimsAsync(petClaimsDetails);
+            // }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while processing the stream {StreamId}", _stream.StreamId);
+            _logger.LogError(ex, "An error occurred while processing the stream {StreamId}", _stream.StreamId);
             throw;
         }
     }
-}
-
-public class PetClaimsEvent
-{
-    public string Data { get; set; }
 }

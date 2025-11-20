@@ -38,7 +38,6 @@ resource eventHubListenPolicy 'Microsoft.EventHub/namespaces/authorizationRules@
   }
 }
 
-// Correct listKeys() call for that policy
 output eventHubNamespaceId string = eventHubNamespace.id
 output eventHubName string = eventHub.name
 
